@@ -216,18 +216,10 @@ export const updateTaskTC = (todoId: string, taskId: string, newValue: UpdateDom
         ...newValue
       }
 
-      if (newValue.status !== undefined) {
         todolistsAPI.updateTask(todoId, taskId, model).then(() => {
-          dispatch(changeTaskStatusAC(taskId, model.status, todoId))
+          if (newValue.status !== undefined) { dispatch(changeTaskStatusAC(taskId, model.status, todoId))}
+          else if (newValue.title !== undefined) { dispatch(changeTaskTitleAC(taskId, model.title, todoId))}
+          else throw 'updateTaskStatusTC bad new value'
         })
-      }
-      else if (newValue.title !== undefined) {
-        todolistsAPI.updateTask(todoId, taskId, model).then(() => {
-          dispatch(changeTaskTitleAC(taskId, model.title, todoId))
-        })
-      }
-      else {
-        throw 'updateTaskStatusTC bad new value'
-      }
     }
   }
