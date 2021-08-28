@@ -187,7 +187,16 @@ export const addTaskTC = (todoId: string, title: string) => (dispatch: Dispatch)
     })
 }
 
-export const updateTaskStatusTC = (todoId: string, taskId: string, status: TaskStatuses) =>
+type UpdateDomainTaskModelType = {
+  title?: string
+  description?: string
+  status?: number
+  priority?: number
+  startDate?: string
+  deadline?: string
+}
+
+export const updateTaskTC = (todoId: string, taskId: string, newValue: UpdateDomainTaskModelType) =>
   (dispatch: Dispatch, getState: () => AppRootStateType) => {
     const state = getState()
     const allTasks = state.tasks
@@ -197,49 +206,28 @@ export const updateTaskStatusTC = (todoId: string, taskId: string, status: TaskS
       return task.id === taskId
     })
     if (currentTask) {
-
       let model: UpdateTaskModelType = {
         title: currentTask.title,
-        status: status,
-        description: currentTask.description,
-        deadline: currentTask.deadline,
-        startDate: currentTask.startDate,
-        priority: currentTask.priority
-      }
-
-
-      // const model: any = {}
-      todolistsAPI.updateTask(todoId, taskId, model).then(() => {
-        dispatch(changeTaskStatusAC(taskId, status, todoId))
-      })
-    }
-  }
-
-export const updateTaskTitleTC = (todoId: string, taskId: string, newTitle: string) =>
-  (dispatch: Dispatch, getState: () => AppRootStateType) => {
-    const state = getState()
-    const allTasks = state.tasks
-    const tasksForClickedTodo = allTasks[todoId]
-
-    const currentTask = tasksForClickedTodo.find((task) => {
-      return task.id === taskId
-    })
-    if (currentTask) {
-
-      let model: UpdateTaskModelType = {
-        title: newTitle,
         status: currentTask.status,
         description: currentTask.description,
         deadline: currentTask.deadline,
         startDate: currentTask.startDate,
-        priority: currentTask.priority
+        priority: currentTask.priority,
+        ...newValue
       }
 
-
-      // const model: any = {}
-      todolistsAPI.updateTask(todoId, taskId, model).then(() => {
-        dispatch(changeTaskTitleAC(taskId, newTitle, todoId))
-      })
+      if (newValue.status !== undefined) {
+        todolistsAPI.updateTask(todoId, taskId, model).then(() => {
+          dispatch(changeTaskStatusAC(taskId, model.status, todoId))
+        })
+      }
+      else if (newValue.title !== undefined) {
+        todolistsAPI.updateTask(todoId, taskId, model).then(() => {
+          dispatch(changeTaskTitleAC(taskId, model.title, todoId))
+        })
+      }
+      else {
+        throw 'updateTaskStatusTC bad new value'
+      }
     }
   }
-
